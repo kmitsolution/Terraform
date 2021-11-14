@@ -23,12 +23,12 @@ Terraform Basics
 5. Terraform input variables
 6. Terraform output variables
 
-#terraform init
-#terraform plan
-#terraform apply
-#terraform destroy
+### terraform init
+### terraform plan
+### terraform apply
+### terraform destroy
 
-Terraform State file
+# Terraform State file
  .tfstate
  
 ### Example1 - Create an empty terraform file(.tf)
