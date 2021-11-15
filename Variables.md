@@ -195,3 +195,110 @@ value="${var.myinput}"
 }
 
 ```
+
+### Example
+
+#### variables (variable.tf)
+```terraform
+variable "region" {
+   description = "Mumbai region"
+   type        = string
+   default     = "ap-south-1"
+}
+variable "keyname" {
+type=string
+default="devops"
+}
+variable "instance_type" {
+type=string
+default="t2.micro"
+}
+
+variable "name" {
+type=string
+default="Test"
+}
+
+
+```
+
+#### main.tf
+
+```terraform
+provider "aws"{
+profile="rprofile"
+region= var.region
+}
+resource "aws_instance" "myFirstInstance" {
+  ami           = "ami-04bde106886a53080"
+  key_name = var.keyname
+  instance_type = var.instance_type
+  tags= {
+    Name = var.name
+  }
+}
+
+```
+
+
+### Example 2
+
+#### variable.tf but without any default values
+```terraform
+variable "instance_type" {
+}
+```
+#### create terraform.tfvars
+instance_type="t2.micro"
+
+#### main.tf
+```terraform
+resource "aws_instance" "myFirstInstance" {
+  ami           = "ami-04bde106886a53080"
+  key_name = "devops"
+  instance_type = var.instance_type
+  tags= {
+    Name = "test"
+  }
+}
+
+```
+
+### Example 3 Terraform multiple tfvars file
+
+#### variable.tf
+```terraform
+variable "instance_type" {
+}
+
+variable "environment_name" {
+}
+
+```
+
+#### stag.tfvars
+```terraform
+instance_type="t2.micro"
+
+environment_name ="stage"
+
+```
+#### main.tf
+```terraform
+provider "aws"{
+profile="rprofile"
+region= "ap-south-1"
+}
+resource "aws_instance" "myFirstInstance" {
+  ami           = "ami-04bde106886a53080"
+  key_name = "devops"
+  instance_type = var.instance_type
+  tags= {
+    Name = var.environment_name
+  }
+}
+
+
+```
+
+### terraform apply -var-file="stag.tfvars"
