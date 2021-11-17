@@ -38,3 +38,25 @@ output "fetched_info_from_aws" {
 }
 
 ```
+
+### Example to list all Ebs volume
+
+```terraform
+provider "aws" {
+   region     = "ap-south-1"
+   profile="rprofile"
+}
+
+data "aws_ebs_volumes" "ebsvolume" {
+
+  filter {
+    name = "volume-type"
+    values = [
+      "gp2"]
+  }
+}
+output "result" {
+value=data.aws_ebs_volumes.ebsvolume.ids
+}
+
+``` 
