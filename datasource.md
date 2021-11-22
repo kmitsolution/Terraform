@@ -5,6 +5,11 @@ Terraform Data Sources are a kind of an API that fetches the data/information fr
 
 <b>depends_on:</b> The second important parameter is depends_on because data source does not know by its own which resource it belongs to, so we are going to add the depends_on parameter.
 
+<img width="944" alt="image" src="https://user-images.githubusercontent.com/84008107/142793895-3ad1a865-b16d-401f-af6b-363bde560f6b.png">
+
+<img width="938" alt="image" src="https://user-images.githubusercontent.com/84008107/142793951-676eac61-b576-4eaf-b92c-5d7ccff75b7e.png">
+
+
 ### Example to find the public ip of created Instance
 ```terraform
 provider "aws" {
