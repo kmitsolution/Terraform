@@ -1,9 +1,9 @@
 ## Terraform Provisioners 
-        Provisioners are used to performing certain custom actions and tasks either on the local machine or on the remote machine.
+Provisioners are used to performing certain custom actions and tasks either on the local machine or on the remote machine.
 
 ### File Provisioner
 
-### Example1 - Upload the file to an EC2 instance
+### Example1(Ubuntu) - Upload the file to an EC2 instance
 
 ```terraform
 provider "aws" {
@@ -65,13 +65,68 @@ resource "aws_key_pair" "deployer" {
 }
 
 ```
+### Example1(Windows) - Upload the file to an EC2 instance
+```terraform
+resource "aws_instance" "ec2_example" {
 
+    ami = "ami-04bde106886a53080"
+    instance_type = "t2.micro"
+    key_name= "aws_key"
+    vpc_security_group_ids = [aws_security_group.main.id]
+
+  provisioner "file" {
+    source      = "C:\\TerraformScript\\02\\app1-install.sh"
+    destination = "/home/ubuntu/test-file.txt"
+  }
+  connection {
+      type        = "ssh"
+      host        = self.public_ip
+      user        = "ubuntu"
+      private_key = file("C:\\TerraformScript\\02\\aws_key")
+      timeout     = "4m"
+   }
+}
+
+resource "aws_security_group" "main" {
+  egress = [
+    {
+      cidr_blocks      = [ "0.0.0.0/0", ]
+      description      = ""
+      from_port        = 0
+      ipv6_cidr_blocks = []
+      prefix_list_ids  = []
+      protocol         = "-1"
+      security_groups  = []
+      self             = false
+      to_port          = 0
+    }
+  ]
+ ingress                = [
+   {
+     cidr_blocks      = [ "0.0.0.0/0", ]
+     description      = ""
+     from_port        = 22
+     ipv6_cidr_blocks = []
+     prefix_list_ids  = []
+     protocol         = "tcp"
+     security_groups  = []
+     self             = false
+     to_port          = 22
+  }
+  ]
+}
+
+resource "aws_key_pair" "deployer" {
+  key_name   = "aws_key"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCjqMDGD5UuqfZh++TT/ds3jR3G1KynzTEHk/Vi+N/Q/OBztwGuTYDpmZYU5w+Izt4+IbDcYH+cYvANS1ASBrjj+gj4ZXgYa47tBLAFiyJCmgOl0bGku8Yjd0NCvm7rSkMPeBLVNkj2B9yC6exV91lwdoPZVnANmE8CmQ3w2fMa4R4lkkmRhXnJOvbm0LDDQVP49GB077rWLW+BrXd1utArfxvQSV976uO4IvAmjnu6DJsn8UCfT+9Ma5a19WMh1fKukx8mQCtRK55v3BJD+GeXxGpwibsDaCm7yS+RriTx0X/hPqRjOOYeJh4SmNrmK1XchMw8cAF3g2nYURZ2YmqxPomTknb6JlJNzzFmvTdIADqpJpEzMwn/olF/z/bOy5mQXL9tekAdbtMqcEeiLOns7HsYZIeF9HBW9UJtc0LAfkT+NEfTKXPN7r/QZvZh30tUR1r3ICxnf6dE6V/PdON8IfSddRdCPhfoSfGs8BDNwb97z6E+BircGJ+ikDaGGBc= raman@Raman-Sharma"
+}
+```
 ### local-exec provisioner
 This provisioner is used when you want to perform some tasks onto your local machine where you have installed the terraform.
 
 So local-exec provisioner is never used to perform any kind task on the remote machine. It will always be used to perform local operations onto your local machine.
 
-Example - Consider the following example where we are trying to create a file hello-world.txt on the local machine
+## Example(Ubuntu) - Consider the following example where we are trying to create a file hello-world.txt on the local machine
 
 ```terraform
 provider "aws" {
@@ -91,6 +146,20 @@ resource "aws_instance" "ec2_example" {
 
 
 
+```
+
+### Example (Windows)
+```terraform
+resource "aws_instance" "ec2_example" {
+
+    ami = "ami-04bde106886a53080"
+    instance_type = "t2.micro"
+    key_name= "devops"
+
+  provisioner "local-exec" {
+    command ="echo 'Test' >> hello-world.txt"
+  }
+}
 ```
 
 ### remote-exec provisioner
