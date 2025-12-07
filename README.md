@@ -1,4 +1,5 @@
-# Terraform
+# Terraform <img width="50" height="50" alt="image" src="https://github.com/user-attachments/assets/83508f0f-0016-41fc-a27b-ca54e9d03a3d" />
+
 ## **1. Introduction to Infrastructure as Code (IaC)**
 
 * What is IaC?
