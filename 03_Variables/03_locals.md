@@ -202,3 +202,195 @@ tags          = local.server_config.tags
 
 ---
 
+# 🌱 **Difference Between Variables and Locals**
+
+| Feature                | Variables                              | Locals                                                |
+| ---------------------- | -------------------------------------- | ----------------------------------------------------- |
+| **Purpose**            | Inputs provided **from outside**       | Internal reusable values created **inside** Terraform |
+| **Can user override?** | YES (via tfvars, CLI)                  | NO (locals cannot be changed externally)              |
+| **Use case**           | Values that may differ per environment | Computed values, naming, reusable logic               |
+| **File**               | `variables.tf`                         | `locals.tf`                                           |
+| **Access**             | `var.variable_name`                    | `local.name`                                          |
+
+---
+
+# 🎯 **WHEN TO USE VARIABLES**
+
+Use **variables** when the value should be provided by:
+
+* user
+* pipeline
+* tfvars file
+* environment
+* module input
+
+Variables = **inputs**
+
+### ✔️ Use variables for:
+
+* instance type
+* region
+* environment (`dev/prod`)
+* VPC CIDR
+* number of servers
+* database size
+* any config that changes between environments
+
+### Example:
+
+```hcl
+variable "instance_type" {
+  type = string
+}
+```
+
+Why?
+Because **instance_type is not constant**—dev and prod use different sizes.
+
+---
+
+# 🎯 **WHEN TO USE LOCALS**
+
+Use **locals** when:
+
+* The value should NOT be overridden
+* You are building a computed expression
+* You want to avoid repeating the same logic
+* You want to create naming conventions
+* You want cleaner code
+
+Locals = **internal reusable expressions**
+
+### ✔️ Use locals for:
+
+* naming format (`"${var.project}-${var.env}"`)
+* combining variables
+* computed values
+* reusable tags
+* derived values
+* shortcuts for complex expressions
+
+### Example:
+
+```hcl
+locals {
+  name_prefix = "${var.project}-${var.env}"
+}
+```
+
+Why?
+Because this is a **calculated value**, not a user input.
+
+---
+
+# 🌟 **Side-by-Side Example**
+
+### ❌ WRONG (using variable for calculated value)
+
+```hcl
+variable "instance_name" {
+  default = "${var.project}-${var.env}"
+}
+```
+
+Reason: It's not an input; it's a computation.
+
+---
+
+### ✔️ CORRECT (use locals)
+
+```hcl
+locals {
+  instance_name = "${var.project}-${var.env}"
+}
+```
+
+Use it:
+
+```hcl
+tags = {
+  Name = local.instance_name
+}
+```
+
+---
+
+# 🧠 **Easy Rule to Remember**
+
+### ✔️ **Use VARIABLES for values that users/environment must pass.**
+
+Examples:
+
+* region
+* environment
+* instance_type
+* port number
+* CIDR blocks
+
+---
+
+### ✔️ **Use LOCALS for values computed from those variables.**
+
+Examples:
+
+* naming standards
+* tags
+* expressions
+* combinations
+* formatting (`upper(var.env)`)
+
+---
+
+# 🚀 **Practical Real-World Example**
+
+### variables.tf
+
+```hcl
+variable "project" {}
+variable "env" {}
+variable "region" {}
+```
+
+### locals.tf
+
+```hcl
+locals {
+  name_prefix = "${var.project}-${var.env}"
+  common_tags = {
+    Project = var.project
+    Env     = var.env
+  }
+}
+```
+
+### main.tf
+
+```hcl
+resource "aws_s3_bucket" "example" {
+  bucket = local.name_prefix
+
+  tags = local.common_tags
+}
+```
+
+Here:
+
+* `project`, `env`, `region` → **user input**
+* `name_prefix`, `common_tags` → **calculated values**
+
+---
+
+# 🎯 Final Summary
+
+| Use                         | VARIABLES           | LOCALS              |
+| --------------------------- | ------------------- | ------------------- |
+| Input from user             | ✔️ Yes              | ❌ No                |
+| Internal calculation        | ❌ Rarely            | ✔️ Always           |
+| Environment-specific values | ✔️                  | ❌                   |
+| Naming convention           | ❌                   | ✔️                  |
+| Reusable tags               | ❌                   | ✔️                  |
+| Can be overridden?          | ✔️ Yes              | ❌ Never             |
+| Example                     | `var.instance_type` | `local.name_prefix` |
+
+---
+
