@@ -13,6 +13,17 @@ Security groups
 
 EBS volume IDs
 
+```
+   image-id
+
+  instance-type
+
+  tag:Name
+
+  instance.group-id
+
+  vpc-id
+```
 A resource ➝ creates
 A data source ➝ reads
 
