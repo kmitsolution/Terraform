@@ -123,62 +123,7 @@ Ports are fully dynamic.
 
 ---
 
-# 🟠 **Example 2: Dynamic Tags Block (Tags as Nested Blocks)**
-
-Some AWS resources use nested `tag` blocks.
-
-### Input tags:
-
-```hcl
-variable "tags" {
-  default = {
-    Name = "MyServer"
-    Env  = "Dev"
-    Team = "Ops"
-  }
-}
-```
-
-### Resource using dynamic block:
-
-```hcl
-resource "aws_instance" "example" {
-  ami           = "ami-123456"
-  instance_type = "t2.micro"
-
-  dynamic "tag" {
-    for_each = var.tags
-
-    content {
-      key   = tag.key
-      value = tag.value
-    }
-  }
-}
-```
-
-Terraform generates:
-
-```
-tag {
-  key = "Name"
-  value = "MyServer"
-}
-
-tag {
-  key = "Env"
-  value = "Dev"
-}
-
-tag {
-  key = "Team"
-  value = "Ops"
-}
-```
-
----
-
-# 🔵 **Example 3: Dynamic Block for IAM Policy Statements**
+# 🔵 **Example 2: Dynamic Block for IAM Policy Statements**
 
 ### Input policy objects:
 
@@ -217,7 +162,7 @@ Terraform generates multiple `statement {}` blocks.
 
 ---
 
-# 🟩 **Example 4: Dynamic Block for Load Balancer Listener Rules**
+# 🟩 **Example 3: Dynamic Block for Load Balancer Listener Rules**
 
 ```hcl
 variable "paths" {
