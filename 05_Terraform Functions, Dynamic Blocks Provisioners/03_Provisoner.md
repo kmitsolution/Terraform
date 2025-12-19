@@ -38,25 +38,61 @@ Requirements:
 ### Resource with provisioner:
 
 ```hcl
-resource "aws_instance" "web" {
-  ami           = "ami-0123456789abcdef0"
-  instance_type = "t2.micro"
-  key_name      = "mykey"
+provider "aws" {
+  region = var.region
+}
 
+
+# Security Group allowing SSH & HTTP
+resource "aws_security_group" "web_sg" {
+  name = "allow-ssh-http"
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] # testing only
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# EC2 Instance
+resource "aws_instance" "web" {
+  ami                    = var.ami # Amazon Linux
+  instance_type          = "t3.micro"
+  key_name               = "ascendion-awskey"
+  vpc_security_group_ids = [aws_security_group.web_sg.id]
+
+  # Run command INSIDE EC2
   provisioner "remote-exec" {
     inline = [
-      "sudo yum update -y",
       "sudo yum install -y httpd",
       "sudo systemctl start httpd",
-      "sudo systemctl enable httpd"
+      "sudo systemctl enable httpd",
+      "echo 'Apache Installed via Terraform' | sudo tee /var/www/html/index.html"
     ]
   }
 
+  # SSH connection to EC2
   connection {
     type        = "ssh"
     user        = "ec2-user"
-    private_key = file("mykey.pem")
+    private_key = file("ascendion-awskey.pem")
     host        = self.public_ip
+    timeout     = "10m"
   }
 }
 ```
@@ -106,12 +142,17 @@ Useful for:
 ## ✅ **Example: Save EC2 public IP locally**
 
 ```hcl
-resource "aws_instance" "example" {
-  ami           = "ami-123456"
+provider "aws" {
+  region = var.region
+}
+
+resource "aws_instance" "web" {
+  ami           = var.ami
   instance_type = "t2.micro"
+  key_name      = "ascendion-awskey"
 
   provisioner "local-exec" {
-    command = "echo ${self.public_ip} >> iplist.txt"
+    command = "echo EC2 Public IP: ${self.public_ip} >> ec2-ip.txt"
   }
 }
 ```
@@ -135,6 +176,64 @@ provisioner "local-exec" {
 # 🟧 **3. File Provisioner**
 
 Uploads a **file or directory** from your local machine → remote instance.
+
+```
+provider "aws" {
+  region = var.region
+}
+
+
+# Security Group allowing SSH
+resource "aws_security_group" "ssh_sg" {
+  name = "allow-ssh"
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] # testing only
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# EC2 Instance
+resource "aws_instance" "web" {
+  ami                    = var.ami # Amazon Linux
+  instance_type          = "t2.micro"
+  key_name               = "ascendion-awskey"
+  vpc_security_group_ids = [aws_security_group.ssh_sg.id]
+
+  # 1️⃣ Upload file to EC2
+  provisioner "file" {
+    source      = "install.sh"
+    destination = "/tmp/install.sh"
+  }
+
+  #  Run the uploaded file
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/install.sh",
+      "sudo /tmp/install.sh"
+    ]
+  }
+
+  # SSH connection
+  connection {
+    type        = "ssh"
+    user        = "ec2-user"
+    private_key = file("ascendion-awskey.pem")
+    host        = self.public_ip
+    timeout     = "10m"
+  }
+}
+```
+
 
 ---
 
